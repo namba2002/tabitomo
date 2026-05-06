@@ -15,7 +15,7 @@ export function ItemCard({ item, onToggle, onDelete, disabled }: ItemCardProps) 
   const isDone = item.is_done;
 
   return (
-    <div className="group flex items-center gap-3 px-4 py-3 bg-white rounded-xl border border-gray-100 shadow-sm">
+    <div className="group flex items-center gap-3 px-4 py-2 bg-white rounded-xl border border-gray-100 shadow-sm">
       <button
         onClick={() => onToggle(item.id, !isDone)}
         disabled={disabled}
