@@ -84,7 +84,7 @@ export function AddItemForm({ roomId, onAdd }: AddItemFormProps) {
             onChange={(e) => setTitle(e.target.value)}
             maxLength={MAX_LENGTH}
             placeholder="例）鎌倉でカフェ巡り、サウナ、キャンプなど"
-            className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 bg-gray-50"
+            className="w-full px-4 py-3 rounded-xl border border-gray-200 text-base focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 bg-gray-50"
           />
           {title.length > 0 && (
             <span className={`absolute right-3 top-1/2 -translate-y-1/2 text-xs ${title.length > MAX_LENGTH ? "text-red-400" : "text-gray-400"}`}>

@@ -66,7 +66,7 @@ export default function TopPage() {
               onKeyDown={(e) => e.key === "Enter" && handleCreateRoom()}
               maxLength={50}
               placeholder="例）大学の友達、家族、会社の同僚"
-              className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 bg-gray-50"
+              className="w-full px-4 py-3 rounded-xl border border-gray-200 text-base focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 bg-gray-50"
               autoFocus
             />
             {name.length > 0 && (
