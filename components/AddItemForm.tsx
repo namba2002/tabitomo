@@ -65,7 +65,7 @@ export function AddItemForm({ roomId, onAdd }: AddItemFormProps) {
   // 折りたたみ状態
   if (!isExpanded) {
     return (
-      <div className="bg-white border-t border-gray-200">
+      <div className="bg-white border-t border-gray-200 pb-safe">
         <button
           onClick={handleExpand}
           className="w-full flex items-center gap-3 px-4 py-3.5 text-left"
@@ -79,7 +79,7 @@ export function AddItemForm({ roomId, onAdd }: AddItemFormProps) {
 
   // 展開状態
   return (
-    <div className="bg-white border-t border-gray-200">
+    <div className="bg-white border-t border-gray-200 pb-safe">
       {error && <p className="text-xs text-red-500 px-4 pt-2">{error}</p>}
 
       {/* 季節選択 */}

@@ -18,7 +18,8 @@
 }
 
 @layer utilities {
-  .safe-area-pb {
-    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  /* ホームインジケーターがある端末のみ底部余白を追加（ない端末は0） */
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
   }
 }
