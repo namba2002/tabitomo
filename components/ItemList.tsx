@@ -39,8 +39,16 @@ export function RoomView({ initialItems, roomId }: RoomViewProps) {
     .filter((i) => i.is_done)
     .sort((a, b) => new Date(b.done_at!).getTime() - new Date(a.done_at!).getTime());
 
-  function handleAdd(newItem: Item) {
-    setItems((prev) => [newItem, ...prev]);
+  function handleOptimisticAdd(tempItem: Item) {
+    setItems((prev) => [tempItem, ...prev]);
+  }
+
+  function handleConfirm(tempId: string, realItem: Item) {
+    setItems((prev) => prev.map((i) => (i.id === tempId ? realItem : i)));
+  }
+
+  function handleRollback(tempId: string) {
+    setItems((prev) => prev.filter((i) => i.id !== tempId));
   }
 
   async function handleDelete(id: string) {
@@ -190,7 +198,12 @@ export function RoomView({ initialItems, roomId }: RoomViewProps) {
       </div>
 
       {/* 下部固定入力エリア */}
-      <AddItemForm roomId={roomId} onAdd={handleAdd} />
+      <AddItemForm
+        roomId={roomId}
+        onOptimisticAdd={handleOptimisticAdd}
+        onConfirm={handleConfirm}
+        onRollback={handleRollback}
+      />
     </div>
   );
 }

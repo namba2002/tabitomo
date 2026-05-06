@@ -6,16 +6,17 @@ import { SEASON_CONFIG } from "./SeasonBadge";
 
 interface AddItemFormProps {
   roomId: string;
-  onAdd: (item: Item) => void;
+  onOptimisticAdd: (tempItem: Item) => void;
+  onConfirm: (tempId: string, realItem: Item) => void;
+  onRollback: (tempId: string) => void;
 }
 
 const SEASONS: Season[] = ["spring", "summer", "autumn", "winter", "undecided"];
 
-export function AddItemForm({ roomId, onAdd }: AddItemFormProps) {
+export function AddItemForm({ roomId, onOptimisticAdd, onConfirm, onRollback }: AddItemFormProps) {
   const [title, setTitle] = useState("");
   const [season, setSeason] = useState<Season>("undecided");
   const [isExpanded, setIsExpanded] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -37,9 +38,24 @@ export function AddItemForm({ roomId, onAdd }: AddItemFormProps) {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!isValid || isLoading) return;
+    if (!isValid) return;
 
-    setIsLoading(true);
+    const tempId = `temp-${Date.now()}`;
+    const tempItem: Item = {
+      id: tempId,
+      room_id: roomId,
+      title: trimmedTitle,
+      season,
+      is_done: false,
+      created_at: new Date().toISOString(),
+      done_at: null,
+    };
+
+    // 即座にUIへ反映
+    onOptimisticAdd(tempItem);
+    setTitle("");
+    setSeason("undecided");
+    setIsExpanded(false);
     setError(null);
 
     try {
@@ -48,17 +64,14 @@ export function AddItemForm({ roomId, onAdd }: AddItemFormProps) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ room_id: roomId, title: trimmedTitle, season }),
       });
-
       if (!res.ok) throw new Error();
-      const newItem = await res.json();
-      onAdd(newItem);
-      setTitle("");
-      setSeason("undecided");
-      setIsExpanded(false);
+      const realItem = await res.json();
+      onConfirm(tempId, realItem);
     } catch {
+      onRollback(tempId);
       setError("追加に失敗しました。もう一度お試しください。");
-    } finally {
-      setIsLoading(false);
+      setIsExpanded(true);
+      setTitle(trimmedTitle);
     }
   }
 
@@ -66,6 +79,7 @@ export function AddItemForm({ roomId, onAdd }: AddItemFormProps) {
   if (!isExpanded) {
     return (
       <div className="bg-white border-t border-gray-200 pb-safe">
+        {error && <p className="text-xs text-red-500 px-4 pt-2">{error}</p>}
         <button
           onClick={handleExpand}
           className="w-full flex items-center gap-3 px-4 py-3.5 text-left"
@@ -80,8 +94,6 @@ export function AddItemForm({ roomId, onAdd }: AddItemFormProps) {
   // 展開状態
   return (
     <div className="bg-white border-t border-gray-200 pb-safe">
-      {error && <p className="text-xs text-red-500 px-4 pt-2">{error}</p>}
-
       {/* 季節選択 */}
       <div className="flex gap-2 px-4 pt-3 overflow-x-auto pb-1">
         {SEASONS.map((s) => {
@@ -124,10 +136,10 @@ export function AddItemForm({ roomId, onAdd }: AddItemFormProps) {
         </div>
         <button
           type="submit"
-          disabled={!isValid || isLoading}
+          disabled={!isValid}
           className="flex-shrink-0 px-4 py-3 bg-blue-500 text-white rounded-xl text-sm font-medium disabled:opacity-40 disabled:cursor-not-allowed hover:bg-blue-600 transition-colors active:scale-95"
         >
-          {isLoading ? "追加中..." : "追加"}
+          追加
         </button>
       </form>
     </div>
