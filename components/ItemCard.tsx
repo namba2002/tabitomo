@@ -3,6 +3,7 @@
 import { Item } from "@/types";
 import { SeasonBadge } from "./SeasonBadge";
 import { formatRelativeTime, formatDoneDate } from "@/lib/time";
+import { Check, Trash2 } from "lucide-react";
 
 interface ItemCardProps {
   item: Item;
@@ -26,19 +27,13 @@ export function ItemCard({ item, onToggle, onDelete, disabled }: ItemCardProps) 
         }}
         aria-label={isDone ? "未完了に戻す" : "完了にする"}
       >
-        {isDone && (
-          <svg className="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-          </svg>
-        )}
+        {isDone && <Check className="w-3.5 h-3.5 text-white" strokeWidth={3} />}
       </button>
 
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 mb-0.5">
           <SeasonBadge season={item.season} />
-          <span
-            className={`text-sm font-medium truncate ${isDone ? "line-through text-gray-400" : "text-gray-800"}`}
-          >
+          <span className={`text-sm font-medium truncate ${isDone ? "line-through text-gray-400" : "text-gray-800"}`}>
             {item.title}
           </span>
         </div>
@@ -55,9 +50,7 @@ export function ItemCard({ item, onToggle, onDelete, disabled }: ItemCardProps) 
         className="flex-shrink-0 p-2 rounded-lg text-gray-300 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100 hover:text-red-400 hover:bg-red-50 active:text-red-400 active:bg-red-50 transition-all disabled:opacity-30"
         aria-label="削除"
       >
-        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" />
-        </svg>
+        <Trash2 className="w-4 h-4" />
       </button>
     </div>
   );

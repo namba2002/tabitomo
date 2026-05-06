@@ -3,6 +3,7 @@
 import { useSearchParams } from "next/navigation";
 import { useState, Suspense } from "react";
 import Link from "next/link";
+import { Check, Copy, ExternalLink } from "lucide-react";
 
 function CreatedContent() {
   const searchParams = useSearchParams();
@@ -50,9 +51,7 @@ function CreatedContent() {
         {/* 成功アイコン */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-16 h-16 bg-emerald-100 rounded-full mb-4">
-            <svg className="w-8 h-8 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-            </svg>
+            <Check className="w-8 h-8 text-emerald-500" strokeWidth={2.5} />
           </div>
           <h1 className="text-2xl font-bold text-gray-800 mb-1">
             ルームを作成しました！
@@ -81,7 +80,7 @@ function CreatedContent() {
                 : "bg-blue-500 text-white hover:bg-blue-600"
             }`}
           >
-            {copied ? "✓ コピーしました！" : "URLをコピーする"}
+            {copied ? <span className="flex items-center justify-center gap-2"><Check className="w-4 h-4" />コピーしました！</span> : <span className="flex items-center justify-center gap-2"><Copy className="w-4 h-4" />URLをコピーする</span>}
           </button>
         </div>
 

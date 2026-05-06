@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Item, Season } from "@/types";
+import { ChevronRight } from "lucide-react";
 import { ItemCard } from "./ItemCard";
 import { AddItemForm } from "./AddItemForm";
 import { SEASON_CONFIG } from "./SeasonBadge";
@@ -165,12 +166,7 @@ export function RoomView({ initialItems, roomId }: RoomViewProps) {
               onClick={() => setDoneExpanded((v) => !v)}
               className="flex items-center gap-2 text-sm font-semibold text-gray-500 mb-3 w-full text-left"
             >
-              <svg
-                className={`w-4 h-4 transition-transform duration-200 ${doneExpanded ? "rotate-90" : ""}`}
-                fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-              </svg>
+              <ChevronRight className={`w-4 h-4 transition-transform duration-200 ${doneExpanded ? "rotate-90" : ""}`} />
               行った場所
               <span className="bg-emerald-100 text-emerald-600 text-xs font-bold px-2 py-0.5 rounded-full">
                 {doneItems.length}

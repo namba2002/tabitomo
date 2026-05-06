@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <title>tabitomo レイアウト比較</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #f3f4f6; font-family: -apple-system, sans-serif; padding: 32px 16px; }
+    h1 { text-align: center; font-size: 20px; color: #374151; margin-bottom: 8px; }
+    .subtitle { text-align: center; font-size: 13px; color: #9ca3af; margin-bottom: 40px; }
+
+    .options { display: flex; gap: 32px; justify-content: center; flex-wrap: wrap; align-items: flex-start; }
+    .option { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+    .label { font-size: 14px; font-weight: 700; color: #374151; }
+    .sublabel { font-size: 11px; color: #6b7280; text-align: center; line-height: 1.6; }
+    .badge { font-size: 13px; font-weight: 700; padding: 4px 14px; border-radius: 99px; }
+    .badge-now { background: #e5e7eb; color: #374151; }
+    .badge-c { background: #dbeafe; color: #1d4ed8; }
+    .badge-d { background: #dcfce7; color: #15803d; }
+
+    .phone {
+      width: 300px;
+      height: 620px;
+      background: white;
+      border-radius: 40px;
+      box-shadow: 0 0 0 8px #1f2937, 0 20px 60px rgba(0,0,0,0.3);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    .header {
+      flex-shrink: 0;
+      padding: 14px 16px 10px;
+      border-bottom: 1px solid #f3f4f6;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .header-title { font-size: 14px; font-weight: 700; color: #1f2937; }
+    .header-sub { font-size: 11px; color: #6b7280; margin-top: 1px; }
+    .share-btn { font-size: 10px; color: #3b82f6; font-weight: 600; background: #eff6ff; padding: 4px 8px; border-radius: 8px; }
+
+    .filter {
+      flex-shrink: 0;
+      padding: 5px 12px;
+      border-bottom: 1px solid #f3f4f6;
+      display: flex;
+      gap: 5px;
+    }
+    .filter-chip { flex-shrink: 0; padding: 2px 9px; border-radius: 99px; font-size: 10px; font-weight: 500; }
+    .filter-chip.active { background: #dbeafe; color: #2563eb; }
+    .filter-chip.inactive { background: #f3f4f6; color: #6b7280; }
+
+    .list { flex: 1; overflow: hidden; padding: 6px 10px 4px; }
+    .section-label {
+      font-size: 10px; font-weight: 700; color: #9ca3af;
+      margin-bottom: 4px; display: flex; align-items: center; gap: 5px;
+    }
+    .count-chip { background: #dbeafe; color: #2563eb; padding: 1px 6px; border-radius: 99px; font-size: 9px; }
+
+    .item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: white;
+      border: 1px solid #f3f4f6;
+      border-radius: 8px;
+      margin-bottom: 4px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+    }
+    .item.py3 { padding: 9px 10px; }
+    .item.py2 { padding: 5px 10px; }
+    .item.py15 { padding: 3px 10px; }
+
+    .circle { width: 16px; height: 16px; border-radius: 50%; border: 2px solid #d1d5db; flex-shrink: 0; }
+    .item-text { flex: 1; min-width: 0; }
+    .item-title { font-size: 11px; color: #1f2937; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .item-meta { font-size: 9px; color: #9ca3af; margin-top: 1px; }
+    .season { font-size: 8px; padding: 1px 4px; border-radius: 99px; display: inline-block; margin-right: 3px; }
+    .spring { background: #fce7f3; color: #be185d; }
+    .summer { background: #fef9c3; color: #a16207; }
+    .autumn { background: #ffedd5; color: #c2410c; }
+    .undecided { background: #f3f4f6; color: #6b7280; }
+
+    /* 現在の入力 */
+    .input-current {
+      flex-shrink: 0;
+      background: white;
+      border-top: 1px solid #e5e7eb;
+      padding: 8px 12px;
+    }
+    .season-row { display: flex; gap: 4px; margin-bottom: 6px; }
+    .season-chip { font-size: 9px; padding: 2px 7px; border-radius: 99px; border: 1.5px solid; flex-shrink: 0; }
+    .s-active { background: #fce7f3; color: #be185d; border-color: #be185d; }
+    .s-inactive { background: white; color: #9ca3af; border-color: #e5e7eb; }
+    .input-row { display: flex; gap: 5px; align-items: center; }
+    .text-input { flex: 1; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 6px 8px; font-size: 11px; color: #9ca3af; }
+    .add-btn { background: #3b82f6; color: white; font-size: 10px; font-weight: 600; padding: 6px 10px; border-radius: 8px; flex-shrink: 0; }
+
+    /* コンパクト入力 */
+    .input-compact {
+      flex-shrink: 0;
+      background: white;
+      border-top: 1px solid #e5e7eb;
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .plus-icon { color: #3b82f6; font-size: 16px; flex-shrink: 0; line-height: 1; }
+    .compact-input { font-size: 13px; color: #9ca3af; }
+
+    /* 件数オーバーレイ */
+    .count-overlay {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 32px;
+    }
+    .count-box { background: white; border-radius: 16px; padding: 14px 24px; text-align: center; }
+    .count-num { font-size: 52px; font-weight: 700; line-height: 1; }
+    .count-now { color: #6b7280; }
+    .count-c { color: #2563eb; }
+    .count-d { color: #15803d; }
+    .count-unit { font-size: 13px; color: #6b7280; margin-top: 4px; }
+
+    .divider { width: 1px; background: #e5e7eb; height: 680px; margin-top: 56px; }
+  </style>
+</head>
+<body>
+
+<h1>tabitomo 表示件数 比較</h1>
+<p class="subtitle">※ iPhone 14 Pro 想定（852px）でのシミュレーション</p>
+
+<div class="options">
+
+  <!-- 現在 -->
+  <div class="option">
+    <div class="label">現在</div>
+    <div class="sublabel">入力：季節＋入力欄<br>カード：日時あり・通常サイズ</div>
+    <div class="phone">
+      <div class="header">
+        <div><div class="header-title">tabitomo</div><div class="header-sub">大学の友達</div></div>
+        <div class="share-btn">共有</div>
+      </div>
+      <div class="filter">
+        <div class="filter-chip active">すべて</div>
+        <div class="filter-chip inactive">春</div>
+        <div class="filter-chip inactive">夏</div>
+        <div class="filter-chip inactive">秋</div>
+        <div class="filter-chip inactive">冬</div>
+      </div>
+      <div class="list">
+        <div class="section-label">行きたい場所 <span class="count-chip">8</span></div>
+        <div class="item py3"><div class="circle"></div><div class="item-text"><div class="item-title"><span class="season spring">春</span>鎌倉でカフェ巡り</div><div class="item-meta">3日前</div></div></div>
+        <div class="item py3"><div class="circle"></div><div class="item-text"><div class="item-title"><span class="season summer">夏</span>沖縄でシュノーケル</div><div class="item-meta">5日前</div></div></div>
+        <div class="item py3"><div class="circle"></div><div class="item-text"><div class="item-title"><span class="season undecided">未定</span>温泉旅行</div><div class="item-meta">1週間前</div></div></div>
+        <div class="item py3"><div class="circle"></div><div class="item-text"><div class="item-title"><span class="season autumn">秋</span>京都紅葉</div><div class="item-meta">1週間前</div></div></div>
+        <div class="item py3"><div class="circle"></div><div class="item-text"><div class="item-title"><span class="season undecided">未定</span>BBQ</div><div class="item-meta">2週間前</div></div></div>
+        <div class="item py3"><div class="circle"></div><div class="item-text"><div class="item-title"><span class="season summer">夏</span>花火大会</div><div class="item-meta">2週間前</div></div></div>
+        <div class="item py3"><div class="circle"></div><div class="item-text"><div class="item-title"><span class="season spring">春</span>花見</div><div class="item-meta">3週間前</div></div></div>
+        <div class="item py3"><div class="circle"></div><div class="item-text"><div class="item-title"><span class="season undecided">未定</span>スキー</div><div class="item-meta">1ヶ月前</div></div></div>
+      </div>
+      <div class="input-current">
+        <div class="season-row">
+          <div class="season-chip s-active">春</div>
+          <div class="season-chip s-inactive">夏</div>
+          <div class="season-chip s-inactive">秋</div>
+          <div class="season-chip s-inactive">冬</div>
+          <div class="season-chip s-inactive">未定</div>
+        </div>
+        <div class="input-row">
+          <div class="text-input">例）鎌倉でカフェ巡り</div>
+          <div class="add-btn">追加</div>
+        </div>
+      </div>
+      <div class="count-overlay"><div class="count-box"><div class="count-num count-now">8</div><div class="count-unit">件表示</div></div></div>
+    </div>
+    <div class="badge badge-now">8件</div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- 案C: 14件 -->
+  <div class="option">
+    <div class="label">案C：14件</div>
+    <div class="sublabel">入力：1行（季節はタップ後）<br>カード：日時あり・やや小さく</div>
+    <div class="phone">
+      <div class="header">
+        <div><div class="header-title">tabitomo</div><div class="header-sub">大学の友達</div></div>
+        <div class="share-btn">共有</div>
+      </div>
+      <div class="filter">
+        <div class="filter-chip active">すべて</div>
+        <div class="filter-chip inactive">春</div>
+        <div class="filter-chip inactive">夏</div>
+        <div class="filter-chip inactive">秋</div>
+        <div class="filter-chip inactive">冬</div>
+      </div>
+      <div class="list">
+        <div class="section-label">行きたい場所 <span class="count-chip">14</span></div>
+        <div class="item py2"><div class="circle"></div><div class="item-text"><div class="item-title"><span class="season spring">春</span>鎌倉でカフェ巡り</div><div class="item-meta">3日前</div></div></div>
+        <div class="item py2"><div class="circle"></div><div class="item-text"><div class="item-title"><span class="season summer">夏</span>沖縄でシュノーケル</div><div class="item-meta">5日前</div></div></div>
+        <div class="item py2"><div class="circle"></div><div class="item-text"><div class="item-title"><span class="season undecided">未定</span>温泉旅行</div><div class="item-meta">1週間前</div></div></div>
+        <div class="item py2"><div class="circle"></div><div class="item-text"><div class="item-title"><span class="season autumn">秋</span>京都紅葉</div><div class="item-meta">1週間前</div></div></div>
+        <div class="item py2"><div class="circle"></div><div class="item-text"><div class="item-title"><span class="season undecided">未定</span>BBQ</div><div class="item-meta">2週間前</div></div></div>
+        <div class="item py2"><div class="circle"></div><div class="item-text"><div class="item-title"><span class="season summer">夏</span>花火大会</div><div class="item-meta">2週間前</div></div></div>
+        <div class="item py2"><div class="circle"></div><div class="item-text"><div class="item-title"><span class="season spring">春</span>花見</div><div class="item-meta">3週間前</div></div></div>
+        <div class="item py2"><div class="circle"></div><div class="item-text"><div class="item-title"><span class="season undecided">未定</span>スキー</div><div class="item-meta">1ヶ月前</div></div></div>
+        <div class="item py2"><div class="circle"></div><div class="item-text"><div class="item-title"><span class="season autumn">秋</span>紅葉ドライブ</div><div class="item-meta">1ヶ月前</div></div></div>
+        <div class="item py2"><div class="circle"></div><div class="item-text"><div class="item-title"><span class="season undecided">未定</span>登山</div><div class="item-meta">1ヶ月前</div></div></div>
+        <div class="item py2"><div class="circle"></div><div class="item-text"><div class="item-title"><span class="season spring">春</span>美術館めぐり</div><div class="item-meta">1ヶ月前</div></div></div>
+        <div class="item py2"><div class="circle"></div><div class="item-text"><div class="item-title"><span class="season summer">夏</span>海水浴</div><div class="item-meta">2ヶ月前</div></div></div>
+        <div class="item py2"><div class="circle"></div><div class="item-text"><div class="item-title"><span class="season undecided">未定</span>サイクリング</div><div class="item-meta">2ヶ月前</div></div></div>
+        <div class="item py2"><div class="circle"></div><div class="item-text"><div class="item-title"><span class="season autumn">秋</span>ハイキング</div><div class="item-meta">2ヶ月前</div></div></div>
+      </div>
+      <div class="input-compact">
+        <div class="plus-icon">＋</div>
+        <div class="compact-input">行きたい場所を追加</div>
+      </div>
+      <div class="count-overlay"><div class="count-box"><div class="count-num count-c">14</div><div class="count-unit">件表示</div></div></div>
+    </div>
+    <div class="badge badge-c">14件</div>
+  </div>
+
+  <!-- 案D: 16件 -->
+  <div class="option">
+    <div class="label">案D：16件</div>
+    <div class="sublabel">入力：1行<br>カード：<strong>日時なし</strong>・最小サイズ</div>
+    <div class="phone">
+      <div class="header">
+        <div><div class="header-title">tabitomo</div><div class="header-sub">大学の友達</div></div>
+        <div class="share-btn">共有</div>
+      </div>
+      <div class="filter">
+        <div class="filter-chip active">すべて</div>
+        <div class="filter-chip inactive">春</div>
+        <div class="filter-chip inactive">夏</div>
+        <div class="filter-chip inactive">秋</div>
+        <div class="filter-chip inactive">冬</div>
+      </div>
+      <div class="list">
+        <div class="section-label">行きたい場所 <span class="count-chip">16</span></div>
+        <div class="item py15"><div class="circle"></div><div class="item-text"><div class="item-title"><span class="season spring">春</span>鎌倉でカフェ巡り</div></div></div>
+        <div class="item py15"><div class="circle"></div><div class="item-text"><div class="item-title"><span class="season summer">夏</span>沖縄でシュノーケル</div></div></div>
+        <div class="item py15"><div class="circle"></div><div class="item-text"><div class="item-title"><span class="season undecided">未定</span>温泉旅行</div></div></div>
+        <div class="item py15"><div class="circle"></div><div class="item-text"><div class="item-title"><span class="season autumn">秋</span>京都紅葉</div></div></div>
+        <div class="item py15"><div class="circle"></div><div class="item-text"><div class="item-title"><span class="season undecided">未定</span>BBQ</div></div></div>
+        <div class="item py15"><div class="circle"></div><div class="item-text"><div class="item-title"><span class="season summer">夏</span>花火大会</div></div></div>
+        <div class="item py15"><div class="circle"></div><div class="item-text"><div class="item-title"><span class="season spring">春</span>花見</div></div></div>
+        <div class="item py15"><div class="circle"></div><div class="item-text"><div class="item-title"><span class="season undecided">未定</span>スキー</div></div></div>
+        <div class="item py15"><div class="circle"></div><div class="item-text"><div class="item-title"><span class="season autumn">秋</span>紅葉ドライブ</div></div></div>
+        <div class="item py15"><div class="circle"></div><div class="item-text"><div class="item-title"><span class="season undecided">未定</span>登山</div></div></div>
+        <div class="item py15"><div class="circle"></div><div class="item-text"><div class="item-title"><span class="season spring">春</span>美術館めぐり</div></div></div>
+        <div class="item py15"><div class="circle"></div><div class="item-text"><div class="item-title"><span class="season summer">夏</span>海水浴</div></div></div>
+        <div class="item py15"><div class="circle"></div><div class="item-text"><div class="item-title"><span class="season undecided">未定</span>サイクリング</div></div></div>
+        <div class="item py15"><div class="circle"></div><div class="item-text"><div class="item-title"><span class="season autumn">秋</span>ハイキング</div></div></div>
+        <div class="item py15"><div class="circle"></div><div class="item-text"><div class="item-title"><span class="season undecided">未定</span>キャンプ</div></div></div>
+        <div class="item py15"><div class="circle"></div><div class="item-text"><div class="item-title"><span class="season spring">春</span>潮干狩り</div></div></div>
+      </div>
+      <div class="input-compact">
+        <div class="plus-icon">＋</div>
+        <div class="compact-input">行きたい場所を追加</div>
+      </div>
+      <div class="count-overlay"><div class="count-box"><div class="count-num count-d">16</div><div class="count-unit">件表示</div></div></div>
+    </div>
+    <div class="badge badge-d">16件</div>
+  </div>
+
+</div>
+
+</body>
+</html>
