@@ -16,6 +16,7 @@ export default async function Image({ params }: { params: Promise<{ slug: string
     .single();
 
   const name = room?.name ?? decoded;
+  const fontSize = name.length > 16 ? 60 : name.length > 10 ? 72 : 88;
 
   return new ImageResponse(
     (
@@ -27,27 +28,74 @@ export default async function Image({ params }: { params: Promise<{ slug: string
           flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
-          background: "linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)",
-          padding: "60px 80px",
+          background: "#ffffff",
+          fontFamily: "sans-serif",
+          padding: "0 80px",
         }}
       >
-        <div style={{ fontSize: 36, color: "#3b82f6", marginBottom: 24, fontWeight: 600 }}>
-          tabitomo ✈️
-        </div>
+        {/* tabitomo ロゴ行 */}
         <div
           style={{
-            fontSize: name.length > 20 ? 56 : 72,
+            display: "flex",
+            alignItems: "center",
+            gap: 12,
+            marginBottom: 48,
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              width: 44,
+              height: 44,
+              borderRadius: 10,
+              background: "#3b82f6",
+            }}
+          >
+            <svg
+              width="26"
+              height="26"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="white"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M2 22h20" />
+              <path d="M6.36 17.4 4 17l-2-4 1.1-.55a2 2 0 0 1 1.8 0l.17.1a2 2 0 0 0 1.8 0L8 12 5 6l.9-.45a2 2 0 0 1 2.09.2l4.02 3a2 2 0 0 0 2.1.2l4.19-2.06a2.41 2.41 0 0 1 1.73-.17L21 7a1.4 1.4 0 0 1 .87 1.99l-.38.76c-.23.46-.6.84-1.07 1.08L7.58 17.2a2 2 0 0 1-1.22.18Z" />
+            </svg>
+          </div>
+          <span style={{ fontSize: 28, fontWeight: 600, color: "#6b7280" }}>
+            tabitomo
+          </span>
+        </div>
+
+        {/* グループ名 */}
+        <div
+          style={{
+            fontSize,
             fontWeight: 700,
-            color: "#1e3a5f",
+            color: "#111827",
             textAlign: "center",
-            lineHeight: 1.3,
-            marginBottom: 24,
+            lineHeight: 1.2,
+            marginBottom: 32,
+            letterSpacing: "-1px",
           }}
         >
           {name}
         </div>
-        <div style={{ fontSize: 28, color: "#4b7ab0" }}>
-          みんなで行きたい場所を共有しよう
+
+        {/* タグライン */}
+        <div
+          style={{
+            fontSize: 26,
+            color: "#9ca3af",
+            textAlign: "center",
+          }}
+        >
+          の行きたい場所リスト
         </div>
       </div>
     ),
