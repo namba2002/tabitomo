@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { PlaneTakeoff } from "lucide-react";
 
 export default function TopPage() {
   const router = useRouter();
@@ -38,7 +39,7 @@ export default function TopPage() {
         {/* ロゴ・タイトル */}
         <div className="text-center mb-12">
           <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-500 rounded-2xl mb-4 shadow-lg">
-            <span className="text-3xl">✈️</span>
+            <PlaneTakeoff className="w-8 h-8 text-white" />
           </div>
           <h1 className="text-3xl font-bold text-gray-800 tracking-tight mb-2">
             tabitomo
@@ -67,7 +68,6 @@ export default function TopPage() {
               maxLength={50}
               placeholder="例）大学の友達、家族、会社の同僚"
               className="w-full px-4 py-3 rounded-xl border border-gray-200 text-base focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 bg-gray-50"
-              autoFocus
             />
             {name.length > 0 && (
               <p className={`text-xs mt-1 text-right ${name.length > 50 ? "text-red-400" : "text-gray-400"}`}>

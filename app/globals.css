@@ -10,6 +10,11 @@
   body {
     -webkit-font-smoothing: antialiased;
   }
+
+  /* iOS Safari のズームイン防止（16px未満でズームが発生するため） */
+  input, select, textarea {
+    font-size: max(16px, 1em);
+  }
 }
 
 @layer utilities {
