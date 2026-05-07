@@ -53,6 +53,7 @@ export function AddItemForm({ roomId, onOptimisticAdd, onConfirm, onRollback, on
       is_done: false,
       created_at: new Date().toISOString(),
       done_at: null,
+      sort_order: 0,
     };
 
     // 即座にUIへ反映

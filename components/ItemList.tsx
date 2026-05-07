@@ -8,6 +8,17 @@ import { AddItemForm } from "./AddItemForm";
 import { ItemDetailSheet } from "./ItemDetailSheet";
 import { SEASON_CONFIG } from "./SeasonBadge";
 import { supabaseBrowser } from "@/lib/supabase-browser";
+import {
+  DndContext,
+  PointerSensor,
+  TouchSensor,
+  closestCenter,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from "@dnd-kit/core";
+import { SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
 const FILTER_SEASONS: { value: Season | "all"; label: string }[] = [
   { value: "all", label: "すべて" },
@@ -23,6 +34,39 @@ interface RoomViewProps {
   roomId: string;
 }
 
+function SortableItemCard(props: {
+  item: Item;
+  onToggle: (id: string, isDone: boolean) => void;
+  onDelete: (id: string) => void;
+  onOpen: (item: Item) => void;
+  disabled?: boolean;
+  showHandle: boolean;
+}) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: props.item.id });
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+    position: "relative" as const,
+    zIndex: isDragging ? 1 : 0,
+  };
+
+  return (
+    <div ref={setNodeRef} style={style}>
+      <ItemCard
+        item={props.item}
+        onToggle={props.onToggle}
+        onDelete={props.onDelete}
+        onOpen={props.onOpen}
+        disabled={props.disabled}
+        showHandle={props.showHandle}
+        dragHandleListeners={listeners}
+        dragHandleAttributes={attributes}
+      />
+    </div>
+  );
+}
+
 export function RoomView({ initialItems, roomId }: RoomViewProps) {
   const [items, setItems] = useState<Item[]>(initialItems);
   const [togglingIds, setTogglingIds] = useState<Set<string>>(new Set());
@@ -33,15 +77,22 @@ export function RoomView({ initialItems, roomId }: RoomViewProps) {
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 5 } })
+  );
+
   const filtered = seasonFilter === "all" ? items : items.filter((i) => i.season === seasonFilter);
 
   const todoItems = filtered
     .filter((i) => !i.is_done)
-    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+    .sort((a, b) => a.sort_order - b.sort_order || new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
   const doneItems = filtered
     .filter((i) => i.is_done)
     .sort((a, b) => new Date(b.done_at!).getTime() - new Date(a.done_at!).getTime());
+
+  const showDragHandles = seasonFilter === "all";
 
   function handleOptimisticAdd(tempItem: Item) {
     setItems((prev) => [tempItem, ...prev]);
@@ -53,6 +104,33 @@ export function RoomView({ initialItems, roomId }: RoomViewProps) {
 
   function handleRollback(tempId: string) {
     setItems((prev) => prev.filter((i) => i.id !== tempId));
+  }
+
+  async function handleDragEnd(event: DragEndEvent) {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+
+    const activeIndex = todoItems.findIndex((i) => i.id === active.id);
+    const overIndex = todoItems.findIndex((i) => i.id === over.id);
+    if (activeIndex === -1 || overIndex === -1) return;
+
+    const reordered = [...todoItems];
+    const [moved] = reordered.splice(activeIndex, 1);
+    reordered.splice(overIndex, 0, moved);
+
+    const updates = reordered.map((item, index) => ({ ...item, sort_order: index }));
+    setItems((prev) =>
+      prev.map((item) => {
+        const updated = updates.find((u) => u.id === item.id);
+        return updated ? updated : item;
+      })
+    );
+
+    await Promise.all(
+      updates.map(({ id, sort_order }) =>
+        supabaseBrowser.from("items").update({ sort_order }).eq("id", id)
+      )
+    );
   }
 
   function handleDetailUpdate(id: string, patch: Partial<Pick<Item, "url" | "memo" | "season">>) {
@@ -167,18 +245,23 @@ export function RoomView({ initialItems, roomId }: RoomViewProps) {
               行きたい場所を追加してみましょう！
             </p>
           ) : (
-            <div className="flex flex-col">
-              {todoItems.map((item) => (
-                <ItemCard
-                  key={item.id}
-                  item={item}
-                  onToggle={handleToggle}
-                  onDelete={handleDelete}
-                  onOpen={setSelectedItem}
-                  disabled={togglingIds.has(item.id) || deletingIds.has(item.id)}
-                />
-              ))}
-            </div>
+            <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+              <SortableContext items={todoItems.map((i) => i.id)} strategy={verticalListSortingStrategy}>
+                <div className="flex flex-col">
+                  {todoItems.map((item) => (
+                    <SortableItemCard
+                      key={item.id}
+                      item={item}
+                      onToggle={handleToggle}
+                      onDelete={handleDelete}
+                      onOpen={setSelectedItem}
+                      disabled={togglingIds.has(item.id) || deletingIds.has(item.id)}
+                      showHandle={showDragHandles}
+                    />
+                  ))}
+                </div>
+              </SortableContext>
+            </DndContext>
           )}
         </section>
 

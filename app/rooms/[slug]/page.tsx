@@ -28,6 +28,7 @@ export default async function RoomPage({ params }: PageProps) {
     .from("items")
     .select("*")
     .eq("room_id", room.id)
+    .order("sort_order", { ascending: true })
     .order("created_at", { ascending: false });
 
   return (

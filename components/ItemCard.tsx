@@ -3,7 +3,9 @@
 import { Item } from "@/types";
 import { SeasonBadge } from "./SeasonBadge";
 import { formatRelativeTime, formatDoneDate } from "@/lib/time";
-import { Check, Trash2, Link, FileText } from "lucide-react";
+import { Check, Trash2, Link, FileText, GripVertical } from "lucide-react";
+import type { DraggableAttributes } from "@dnd-kit/core";
+import type { SyntheticListenerMap } from "@dnd-kit/core/dist/hooks/utilities";
 
 interface ItemCardProps {
   item: Item;
@@ -11,9 +13,12 @@ interface ItemCardProps {
   onDelete: (id: string) => void;
   onOpen: (item: Item) => void;
   disabled?: boolean;
+  showHandle?: boolean;
+  dragHandleListeners?: SyntheticListenerMap;
+  dragHandleAttributes?: DraggableAttributes;
 }
 
-export function ItemCard({ item, onToggle, onDelete, onOpen, disabled }: ItemCardProps) {
+export function ItemCard({ item, onToggle, onDelete, onOpen, disabled, showHandle, dragHandleListeners, dragHandleAttributes }: ItemCardProps) {
   const isDone = item.is_done;
 
   return (
@@ -81,6 +86,18 @@ export function ItemCard({ item, onToggle, onDelete, onOpen, disabled }: ItemCar
       >
         <Trash2 className="w-4 h-4" />
       </button>
+
+      {/* ドラッグハンドル（右端） */}
+      {showHandle && (
+        <button
+          className="flex-shrink-0 p-1.5 text-gray-300 cursor-grab active:cursor-grabbing touch-none"
+          aria-label="並び替え"
+          {...dragHandleListeners}
+          {...dragHandleAttributes}
+        >
+          <GripVertical className="w-4 h-4" />
+        </button>
+      )}
     </div>
   );
 }
