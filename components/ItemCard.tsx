@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useRef } from "react";
 import { Item } from "@/types";
 import { SeasonBadge } from "./SeasonBadge";
 import { formatRelativeTime, formatDoneDate } from "@/lib/time";
@@ -20,6 +21,24 @@ interface ItemCardProps {
 
 export function ItemCard({ item, onToggle, onDelete, onOpen, disabled, showHandle, dragHandleListeners, dragHandleAttributes }: ItemCardProps) {
   const isDone = item.is_done;
+  const handleRef = useRef<HTMLButtonElement>(null);
+
+  // LINE のミニブラウザはネイティブレベルで縦スワイプを横取りする。
+  // React の onTouchStart は passive なため preventDefault() が届かない。
+  // DOM に直接 passive:false で登録することで WKWebView 経由でネイティブ層に伝達し、
+  // LINE パネルの移動ジェスチャーを無効化する。
+  useEffect(() => {
+    if (!showHandle) return;
+    const el = handleRef.current;
+    if (!el) return;
+    const prevent = (e: TouchEvent) => e.preventDefault();
+    el.addEventListener("touchstart", prevent, { passive: false });
+    el.addEventListener("touchmove", prevent, { passive: false });
+    return () => {
+      el.removeEventListener("touchstart", prevent);
+      el.removeEventListener("touchmove", prevent);
+    };
+  }, [showHandle]);
 
   return (
     <div className="group flex items-center gap-3 px-4 py-2 bg-white border-b border-gray-100">
@@ -90,6 +109,7 @@ export function ItemCard({ item, onToggle, onDelete, onOpen, disabled, showHandl
       {/* ドラッグハンドル（右端） */}
       {showHandle && (
         <button
+          ref={handleRef}
           className="flex-shrink-0 p-1.5 text-gray-300 cursor-grab active:cursor-grabbing"
           style={{ touchAction: "none", userSelect: "none" }}
           aria-label="並び替え"

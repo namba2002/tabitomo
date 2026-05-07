@@ -11,6 +11,7 @@ import { supabaseBrowser } from "@/lib/supabase-browser";
 import {
   DndContext,
   PointerSensor,
+  TouchSensor,
   closestCenter,
   useSensor,
   useSensors,
@@ -78,7 +79,9 @@ export function RoomView({ initialItems, roomId }: RoomViewProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    // touchstart で preventDefault() 済みのため、TouchSensor がタッチドラッグを担当する
+    useSensor(TouchSensor, { activationConstraint: { delay: 0, tolerance: 5 } })
   );
 
   const filtered = seasonFilter === "all" ? items : items.filter((i) => i.season === seasonFilter);
