@@ -46,6 +46,8 @@ export function AddItemForm({ roomId, onOptimisticAdd, onConfirm, onRollback }: 
       room_id: roomId,
       title: trimmedTitle,
       season,
+      memo: null,
+      url: null,
       is_done: false,
       created_at: new Date().toISOString(),
       done_at: null,

@@ -5,6 +5,7 @@ import { Item, Season } from "@/types";
 import { ChevronRight } from "lucide-react";
 import { ItemCard } from "./ItemCard";
 import { AddItemForm } from "./AddItemForm";
+import { ItemDetailSheet } from "./ItemDetailSheet";
 import { SEASON_CONFIG } from "./SeasonBadge";
 
 const FILTER_SEASONS: { value: Season | "all"; label: string }[] = [
@@ -28,6 +29,7 @@ export function RoomView({ initialItems, roomId }: RoomViewProps) {
   const [toggleError, setToggleError] = useState<string | null>(null);
   const [doneExpanded, setDoneExpanded] = useState(true);
   const [seasonFilter, setSeasonFilter] = useState<Season | "all">("all");
+  const [selectedItem, setSelectedItem] = useState<Item | null>(null);
 
   const filtered = seasonFilter === "all" ? items : items.filter((i) => i.season === seasonFilter);
 
@@ -49,6 +51,11 @@ export function RoomView({ initialItems, roomId }: RoomViewProps) {
 
   function handleRollback(tempId: string) {
     setItems((prev) => prev.filter((i) => i.id !== tempId));
+  }
+
+  function handleDetailUpdate(id: string, patch: Partial<Pick<Item, "url" | "memo">>) {
+    setItems((prev) => prev.map((i) => (i.id === id ? { ...i, ...patch } : i)));
+    setSelectedItem((prev) => (prev?.id === id ? { ...prev, ...patch } : prev));
   }
 
   async function handleDelete(id: string) {
@@ -114,6 +121,11 @@ export function RoomView({ initialItems, roomId }: RoomViewProps) {
 
   return (
     <div className="flex flex-col h-full">
+      <ItemDetailSheet
+        item={selectedItem}
+        onClose={() => setSelectedItem(null)}
+        onUpdate={handleDetailUpdate}
+      />
       {/* 季節フィルター */}
       <div className="flex gap-2 px-4 py-2 overflow-x-auto border-b border-gray-100">
         {FILTER_SEASONS.map(({ value, label }) => {
@@ -160,6 +172,7 @@ export function RoomView({ initialItems, roomId }: RoomViewProps) {
                   item={item}
                   onToggle={handleToggle}
                   onDelete={handleDelete}
+                  onOpen={setSelectedItem}
                   disabled={togglingIds.has(item.id) || deletingIds.has(item.id)}
                 />
               ))}
@@ -188,6 +201,7 @@ export function RoomView({ initialItems, roomId }: RoomViewProps) {
                     item={item}
                     onToggle={handleToggle}
                     onDelete={handleDelete}
+                    onOpen={setSelectedItem}
                     disabled={togglingIds.has(item.id) || deletingIds.has(item.id)}
                   />
                 ))}

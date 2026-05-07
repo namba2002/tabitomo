@@ -7,11 +7,15 @@ export async function PATCH(
 ) {
   const { id } = await params;
   const body = await request.json();
-  const { is_done } = body as { is_done: boolean };
-  const updateData = {
-    is_done,
-    done_at: is_done ? new Date().toISOString() : null,
-  };
+  const { is_done, url, memo } = body as { is_done?: boolean; url?: string; memo?: string };
+
+  const updateData: Record<string, unknown> = {};
+  if (is_done !== undefined) {
+    updateData.is_done = is_done;
+    updateData.done_at = is_done ? new Date().toISOString() : null;
+  }
+  if (url !== undefined) updateData.url = url;
+  if (memo !== undefined) updateData.memo = memo;
 
   const { data, error } = await supabase
     .from("items")
