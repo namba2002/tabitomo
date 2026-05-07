@@ -19,6 +19,7 @@ export function ItemDetailSheet({ item, onClose, onUpdate }: ItemDetailSheetProp
   const [memo, setMemo] = useState("");
   const [season, setSeason] = useState<Season>("undecided");
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved">("idle");
+  const [isUrlFocused, setIsUrlFocused] = useState(false);
   const pendingSave = useRef<Promise<void> | null>(null);
   const isClosing = useRef(false);
   const isOpen = item !== null;
@@ -168,7 +169,10 @@ export function ItemDetailSheet({ item, onClose, onUpdate }: ItemDetailSheetProp
               <Link className="w-3 h-3" />
               場所のURL（Google マップなど）
             </label>
-            {url && isValidUrl(url) ? (
+            {/* フォーカス中は必ず input を維持する。
+                onChange の途中で条件が変わり input がアンマウントされると
+                blur が発火せず saveField が呼ばれないため URL が保存されない。 */}
+            {url && isValidUrl(url) && !isUrlFocused ? (
               <div className="flex items-center gap-2 px-3 py-2.5 bg-blue-50 border border-blue-200 rounded-lg">
                 <FileText className="w-4 h-4 text-blue-500 flex-shrink-0" />
                 <span className="flex-1 text-sm text-blue-600 truncate">{url}</span>
@@ -194,7 +198,11 @@ export function ItemDetailSheet({ item, onClose, onUpdate }: ItemDetailSheetProp
                 type="url"
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
-                onBlur={(e) => saveField("url", e.target.value)}
+                onFocus={() => setIsUrlFocused(true)}
+                onBlur={(e) => {
+                  setIsUrlFocused(false);
+                  saveField("url", e.target.value);
+                }}
                 placeholder="https://maps.google.com/..."
                 className="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-base text-gray-700 bg-gray-50 focus:bg-white focus:border-blue-400 focus:outline-none transition-colors"
               />
