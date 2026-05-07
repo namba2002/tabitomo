@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { nameToSlug } from "@/lib/slug";
 
+export const runtime = "edge";
+
 export async function POST(request: NextRequest) {
   const body = await request.json();
   const name = body.name?.trim() || "";
@@ -12,18 +14,17 @@ export async function POST(request: NextRequest) {
 
   const baseSlug = nameToSlug(name);
 
-  // 同名slugが存在する場合は末尾に数字を付加
+  // 同パターンのslugを1回のクエリで取得
+  const { data: existing } = await supabase
+    .from("rooms")
+    .select("slug")
+    .or(`slug.eq.${baseSlug},slug.like.${baseSlug}-%`);
+
+  const slugSet = new Set(existing?.map((r: { slug: string }) => r.slug) ?? []);
+
   let slug = baseSlug;
   let suffix = 2;
-
-  while (true) {
-    const { data: existing } = await supabase
-      .from("rooms")
-      .select("id")
-      .eq("slug", slug)
-      .single();
-
-    if (!existing) break;
+  while (slugSet.has(slug)) {
     slug = `${baseSlug}-${suffix}`;
     suffix++;
     if (suffix > 99) {
@@ -37,7 +38,20 @@ export async function POST(request: NextRequest) {
     .select()
     .single();
 
+  // unique制約違反（レースコンディション）はタイムスタンプサフィックスでリトライ
   if (error) {
+    if (error.code === "23505") {
+      const fallbackSlug = `${baseSlug}-${Date.now()}`;
+      const { data: retryData, error: retryError } = await supabase
+        .from("rooms")
+        .insert({ slug: fallbackSlug, name })
+        .select()
+        .single();
+      if (retryError) {
+        return NextResponse.json({ error: "ルームの作成に失敗しました" }, { status: 500 });
+      }
+      return NextResponse.json({ slug: retryData.slug, name: retryData.name }, { status: 201 });
+    }
     return NextResponse.json({ error: "ルームの作成に失敗しました" }, { status: 500 });
   }
 

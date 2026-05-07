@@ -3,6 +3,7 @@
 import { useState, useRef } from "react";
 import { Item, Season } from "@/types";
 import { SEASON_CONFIG } from "./SeasonBadge";
+import { supabaseBrowser } from "@/lib/supabase-browser";
 
 interface AddItemFormProps {
   roomId: string;
@@ -61,14 +62,13 @@ export function AddItemForm({ roomId, onOptimisticAdd, onConfirm, onRollback }: 
     setError(null);
 
     try {
-      const res = await fetch("/api/items", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ room_id: roomId, title: trimmedTitle, season }),
-      });
-      if (!res.ok) throw new Error();
-      const realItem = await res.json();
-      onConfirm(tempId, realItem);
+      const { data: realItem, error } = await supabaseBrowser
+        .from("items")
+        .insert({ room_id: roomId, title: trimmedTitle, season, is_done: false })
+        .select()
+        .single();
+      if (error) throw new Error();
+      onConfirm(tempId, realItem as Item);
     } catch {
       onRollback(tempId);
       setError("追加に失敗しました。もう一度お試しください。");

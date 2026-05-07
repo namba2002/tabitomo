@@ -5,10 +5,12 @@
 @layer base {
   html {
     -webkit-text-size-adjust: 100%;
+    overscroll-behavior: none;
   }
 
   body {
     -webkit-font-smoothing: antialiased;
+    overscroll-behavior: none;
   }
 
   /* iOS Safari のズームイン防止（16px未満でズームが発生するため） */

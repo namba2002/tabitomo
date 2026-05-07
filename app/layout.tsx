@@ -31,7 +31,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ja">
-      <body className="bg-gray-50 min-h-screen">{children}</body>
+      <body className="bg-gray-50 min-h-screen overflow-hidden">{children}</body>
     </html>
   );
 }

@@ -31,14 +31,18 @@ export default async function RoomPage({ params }: PageProps) {
     .order("created_at", { ascending: false });
 
   return (
-    <div className="flex flex-col h-svh max-w-lg mx-auto bg-white shadow-sm">
+    <div className="flex flex-col h-svh max-w-lg mx-auto bg-white shadow-sm overflow-hidden">
       {/* ヘッダー */}
-      <header className="flex-shrink-0 px-4 pt-4 pb-3 border-b border-gray-100 bg-white flex items-center justify-between">
-        <div>
-          <h1 className="text-lg font-bold text-gray-800 tracking-tight">tabitomo</h1>
-          <p className="text-sm font-medium text-gray-700 mt-0.5">{room.name}</p>
+      <header className="flex-shrink-0 px-4 pt-3 pb-3 border-b border-gray-100 bg-white">
+        <div className="relative flex items-center justify-center">
+          <div className="text-center">
+            <p className="text-xs font-bold text-blue-500 tracking-[0.2em] uppercase">tabitomo</p>
+            <h1 className="text-xl font-bold text-gray-900 mt-0.5">{room.name}</h1>
+          </div>
+          <div className="absolute right-0 top-1/2 -translate-y-1/2">
+            <ShareButton roomName={room.name} />
+          </div>
         </div>
-        <ShareButton roomName={room.name} />
       </header>
 
       {/* メインコンテンツ（スクロール可能 + 下部固定フォーム） */}

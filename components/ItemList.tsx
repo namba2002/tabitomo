@@ -7,6 +7,7 @@ import { ItemCard } from "./ItemCard";
 import { AddItemForm } from "./AddItemForm";
 import { ItemDetailSheet } from "./ItemDetailSheet";
 import { SEASON_CONFIG } from "./SeasonBadge";
+import { supabaseBrowser } from "@/lib/supabase-browser";
 
 const FILTER_SEASONS: { value: Season | "all"; label: string }[] = [
   { value: "all", label: "すべて" },
@@ -53,7 +54,7 @@ export function RoomView({ initialItems, roomId }: RoomViewProps) {
     setItems((prev) => prev.filter((i) => i.id !== tempId));
   }
 
-  function handleDetailUpdate(id: string, patch: Partial<Pick<Item, "url" | "memo">>) {
+  function handleDetailUpdate(id: string, patch: Partial<Pick<Item, "url" | "memo" | "season">>) {
     setItems((prev) => prev.map((i) => (i.id === id ? { ...i, ...patch } : i)));
     setSelectedItem((prev) => (prev?.id === id ? { ...prev, ...patch } : prev));
   }
@@ -64,8 +65,8 @@ export function RoomView({ initialItems, roomId }: RoomViewProps) {
     setItems((prev) => prev.filter((item) => item.id !== id));
 
     try {
-      const res = await fetch(`/api/items/${id}`, { method: "DELETE" });
-      if (!res.ok) throw new Error();
+      const { error } = await supabaseBrowser.from("items").delete().eq("id", id);
+      if (error) throw new Error();
     } catch {
       setItems((prev) => {
         const original = initialItems.find((i) => i.id === id);
@@ -94,15 +95,15 @@ export function RoomView({ initialItems, roomId }: RoomViewProps) {
     );
 
     try {
-      const res = await fetch(`/api/items/${id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ is_done: isDone }),
-      });
-
-      if (!res.ok) throw new Error();
-      const updated = await res.json();
-      setItems((prev) => prev.map((item) => (item.id === id ? updated : item)));
+      const doneAt = isDone ? new Date().toISOString() : null;
+      const { data: updated, error } = await supabaseBrowser
+        .from("items")
+        .update({ is_done: isDone, done_at: doneAt })
+        .eq("id", id)
+        .select()
+        .single();
+      if (error) throw new Error();
+      setItems((prev) => prev.map((item) => (item.id === id ? (updated as Item) : item)));
     } catch {
       setItems((prev) =>
         prev.map((item) =>
@@ -120,7 +121,7 @@ export function RoomView({ initialItems, roomId }: RoomViewProps) {
   }
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col flex-1 min-h-0">
       <ItemDetailSheet
         item={selectedItem}
         onClose={() => setSelectedItem(null)}
@@ -145,7 +146,7 @@ export function RoomView({ initialItems, roomId }: RoomViewProps) {
         })}
       </div>
 
-      <div className="flex-1 overflow-y-auto px-4 py-4">
+      <div className={`flex-1 px-4 py-4 overscroll-none ${selectedItem ? "overflow-hidden" : "overflow-y-auto"}`}>
         {toggleError && (
           <div className="mb-3 px-3 py-2 bg-red-50 text-red-600 text-sm rounded-lg">
             {toggleError}
@@ -165,7 +166,7 @@ export function RoomView({ initialItems, roomId }: RoomViewProps) {
               行きたい場所を追加してみましょう！
             </p>
           ) : (
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-col">
               {todoItems.map((item) => (
                 <ItemCard
                   key={item.id}
@@ -194,7 +195,7 @@ export function RoomView({ initialItems, roomId }: RoomViewProps) {
               </span>
             </button>
             {doneExpanded && (
-              <div className="flex flex-col gap-2">
+              <div className="flex flex-col">
                 {doneItems.map((item) => (
                   <ItemCard
                     key={item.id}

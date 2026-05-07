@@ -7,7 +7,7 @@ export async function PATCH(
 ) {
   const { id } = await params;
   const body = await request.json();
-  const { is_done, url, memo } = body as { is_done?: boolean; url?: string; memo?: string };
+  const { is_done, url, memo, season } = body as { is_done?: boolean; url?: string; memo?: string; season?: string };
 
   const updateData: Record<string, unknown> = {};
   if (is_done !== undefined) {
@@ -16,6 +16,7 @@ export async function PATCH(
   }
   if (url !== undefined) updateData.url = url;
   if (memo !== undefined) updateData.memo = memo;
+  if (season !== undefined) updateData.season = season;
 
   const { data, error } = await supabase
     .from("items")
