@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { Item, Season } from "@/types";
 import { ChevronRight } from "lucide-react";
 import { ItemCard } from "./ItemCard";
@@ -32,28 +32,6 @@ export function RoomView({ initialItems, roomId }: RoomViewProps) {
   const [seasonFilter, setSeasonFilter] = useState<Season | "all">("all");
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
-  const justSubmittedRef = useRef(false);
-
-  // iOS Safari がキーボード表示時に window.scrollY をずらす問題への対処。
-  // visualViewport のリサイズ（＝キーボード消去）を検知して window と list の両方をリセットする。
-  useEffect(() => {
-    const vv = window.visualViewport;
-    if (!vv) return;
-    let lastHeight = vv.height;
-
-    function handleResize() {
-      if (vv!.height > lastHeight && justSubmittedRef.current) {
-        window.scrollTo(0, 0);
-        document.documentElement.scrollTop = 0;
-        if (scrollRef.current) scrollRef.current.scrollTop = 0;
-        justSubmittedRef.current = false;
-      }
-      lastHeight = vv!.height;
-    }
-
-    vv.addEventListener("resize", handleResize);
-    return () => vv.removeEventListener("resize", handleResize);
-  }, []);
 
   const filtered = seasonFilter === "all" ? items : items.filter((i) => i.season === seasonFilter);
 
@@ -243,10 +221,7 @@ export function RoomView({ initialItems, roomId }: RoomViewProps) {
           onConfirm={handleConfirm}
           onRollback={handleRollback}
           onAfterSubmit={() => {
-            justSubmittedRef.current = true;
             if (scrollRef.current) scrollRef.current.scrollTop = 0;
-            window.scrollTo(0, 0);
-            document.documentElement.scrollTop = 0;
           }}
         />
       </div>

@@ -11,6 +11,11 @@
   body {
     -webkit-font-smoothing: antialiased;
     overscroll-behavior: none;
+    /* iOS Safari がキーボード表示時に window.scrollY をずらすバグの根本対策。
+       overflow:hidden だけでは防げないため position:fixed で完全に固定する。 */
+    position: fixed;
+    inset: 0;
+    overflow: hidden;
   }
 
   /* iOS Safari のズームイン防止（16px未満でズームが発生するため） */
