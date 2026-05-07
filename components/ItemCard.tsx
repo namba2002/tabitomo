@@ -90,7 +90,8 @@ export function ItemCard({ item, onToggle, onDelete, onOpen, disabled, showHandl
       {/* ドラッグハンドル（右端） */}
       {showHandle && (
         <button
-          className="flex-shrink-0 p-1.5 text-gray-300 cursor-grab active:cursor-grabbing touch-none"
+          className="flex-shrink-0 p-1.5 text-gray-300 cursor-grab active:cursor-grabbing"
+          style={{ touchAction: "none", userSelect: "none" }}
           aria-label="並び替え"
           {...dragHandleListeners}
           {...dragHandleAttributes}

@@ -11,7 +11,6 @@ import { supabaseBrowser } from "@/lib/supabase-browser";
 import {
   DndContext,
   PointerSensor,
-  TouchSensor,
   closestCenter,
   useSensor,
   useSensors,
@@ -75,11 +74,11 @@ export function RoomView({ initialItems, roomId }: RoomViewProps) {
   const [doneExpanded, setDoneExpanded] = useState(true);
   const [seasonFilter, setSeasonFilter] = useState<Season | "all">("all");
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
+  const [isDraggingList, setIsDraggingList] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
-    useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 5 } })
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
   );
 
   const filtered = seasonFilter === "all" ? items : items.filter((i) => i.season === seasonFilter);
@@ -107,6 +106,7 @@ export function RoomView({ initialItems, roomId }: RoomViewProps) {
   }
 
   async function handleDragEnd(event: DragEndEvent) {
+    setIsDraggingList(false);
     const { active, over } = event;
     if (!over || active.id === over.id) return;
 
@@ -225,7 +225,7 @@ export function RoomView({ initialItems, roomId }: RoomViewProps) {
         })}
       </div>
 
-      <div ref={scrollRef} className={`flex-1 px-4 py-4 pb-20 overscroll-none ${selectedItem ? "overflow-hidden" : "overflow-y-auto"}`}>
+      <div ref={scrollRef} className={`flex-1 px-4 py-4 pb-20 overscroll-none ${selectedItem || isDraggingList ? "overflow-hidden" : "overflow-y-auto"}`}>
         {toggleError && (
           <div className="mb-3 px-3 py-2 bg-red-50 text-red-600 text-sm rounded-lg">
             {toggleError}
@@ -245,7 +245,13 @@ export function RoomView({ initialItems, roomId }: RoomViewProps) {
               行きたい場所を追加してみましょう！
             </p>
           ) : (
-            <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragStart={() => setIsDraggingList(true)}
+              onDragEnd={handleDragEnd}
+              onDragCancel={() => setIsDraggingList(false)}
+            >
               <SortableContext items={todoItems.map((i) => i.id)} strategy={verticalListSortingStrategy}>
                 <div className="flex flex-col">
                   {todoItems.map((item) => (
