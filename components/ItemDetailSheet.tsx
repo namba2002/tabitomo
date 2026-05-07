@@ -19,7 +19,8 @@ export function ItemDetailSheet({ item, onClose, onUpdate }: ItemDetailSheetProp
   const [memo, setMemo] = useState("");
   const [season, setSeason] = useState<Season>("undecided");
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved">("idle");
-  const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pendingSave = useRef<Promise<void> | null>(null);
+  const isClosing = useRef(false);
   const isOpen = item !== null;
 
   useEffect(() => {
@@ -28,6 +29,7 @@ export function ItemDetailSheet({ item, onClose, onUpdate }: ItemDetailSheetProp
       setMemo(item.memo ?? "");
       setSeason(item.season);
       setSaveStatus("saved");
+      isClosing.current = false;
     }
   }, [item?.id]);
 
@@ -49,46 +51,38 @@ export function ItemDetailSheet({ item, onClose, onUpdate }: ItemDetailSheetProp
     }
   }
 
-  // 即時保存（onBlur・クローズ時に使用）
-  async function doSave(patch: Partial<Pick<Item, "url" | "memo">>) {
+  // フィールドを離れたときに呼ぶ。値が変わっていない場合は何もしない。
+  async function saveField(field: "url" | "memo", value: string) {
     if (!item) return;
-    if (saveTimer.current) { clearTimeout(saveTimer.current); saveTimer.current = null; }
+    const normalized = value.trim() ? value : null;
+    if (normalized === (item[field] ?? null)) return;
+
+    const patch = { [field]: normalized } as Partial<Pick<Item, "url" | "memo">>;
     setSaveStatus("saving");
-    try {
-      const { error } = await supabaseBrowser
-        .from("items")
-        .update(patch)
-        .eq("id", item.id);
+
+    const promise = (async () => {
+      const { error } = await supabaseBrowser.from("items").update(patch).eq("id", item.id);
       if (error) throw new Error();
       onUpdate(item.id, patch);
       setSaveStatus("saved");
+    })();
+
+    pendingSave.current = promise;
+    try {
+      await promise;
     } catch {
       setSaveStatus("idle");
+    } finally {
+      if (pendingSave.current === promise) pendingSave.current = null;
     }
   }
 
-  // デバウンス保存（onChange 入力中に使用、300ms）
-  function triggerSave(field: "url" | "memo", value: string) {
-    if (!item) return;
-    setSaveStatus("saving");
-    if (saveTimer.current) clearTimeout(saveTimer.current);
-    saveTimer.current = setTimeout(() => {
-      doSave({ [field]: value || null } as Partial<Pick<Item, "url" | "memo">>);
-    }, 300);
-  }
-
-  // シートを閉じる前に未保存の変更をフラッシュ
-  function handleClose() {
-    if (item && saveTimer.current) {
-      clearTimeout(saveTimer.current);
-      saveTimer.current = null;
-      const patch: Partial<Pick<Item, "url" | "memo">> = {};
-      if (url !== (item.url ?? "")) patch.url = url || null;
-      if (memo !== (item.memo ?? "")) patch.memo = memo || null;
-      if (Object.keys(patch).length > 0) {
-        supabaseBrowser.from("items").update(patch).eq("id", item.id)
-          .then(() => onUpdate(item.id, patch));
-      }
+  // 保存中なら完了を待ってから閉じる
+  async function handleClose() {
+    if (isClosing.current) return;
+    isClosing.current = true;
+    if (pendingSave.current) {
+      await pendingSave.current;
     }
     onClose();
   }
@@ -96,6 +90,8 @@ export function ItemDetailSheet({ item, onClose, onUpdate }: ItemDetailSheetProp
   const isValidUrl = (v: string) => {
     try { new URL(v); return true; } catch { return false; }
   };
+
+  const isSaving = saveStatus === "saving";
 
   return (
     <>
@@ -133,7 +129,8 @@ export function ItemDetailSheet({ item, onClose, onUpdate }: ItemDetailSheetProp
           </div>
           <button
             onClick={handleClose}
-            className="flex-shrink-0 p-1 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+            disabled={isSaving}
+            className={`flex-shrink-0 p-1 rounded-lg transition-colors ${isSaving ? "text-gray-200 cursor-not-allowed" : "text-gray-400 hover:text-gray-600 hover:bg-gray-100"}`}
             aria-label="閉じる"
           >
             <X className="w-4 h-4" />
@@ -186,7 +183,7 @@ export function ItemDetailSheet({ item, onClose, onUpdate }: ItemDetailSheetProp
                   <ExternalLink className="w-4 h-4" />
                 </a>
                 <button
-                  onClick={() => { setUrl(""); triggerSave("url", ""); }}
+                  onClick={() => { setUrl(""); saveField("url", ""); }}
                   className="flex-shrink-0 text-xs text-gray-400 hover:text-gray-600"
                 >
                   変更
@@ -196,8 +193,8 @@ export function ItemDetailSheet({ item, onClose, onUpdate }: ItemDetailSheetProp
               <input
                 type="url"
                 value={url}
-                onChange={(e) => { setUrl(e.target.value); triggerSave("url", e.target.value); }}
-                onBlur={(e) => doSave({ url: e.target.value || null })}
+                onChange={(e) => setUrl(e.target.value)}
+                onBlur={(e) => saveField("url", e.target.value)}
                 placeholder="https://maps.google.com/..."
                 className="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-base text-gray-700 bg-gray-50 focus:bg-white focus:border-blue-400 focus:outline-none transition-colors"
               />
@@ -212,8 +209,8 @@ export function ItemDetailSheet({ item, onClose, onUpdate }: ItemDetailSheetProp
             </label>
             <textarea
               value={memo}
-              onChange={(e) => { setMemo(e.target.value); triggerSave("memo", e.target.value); }}
-              onBlur={(e) => doSave({ memo: e.target.value || null })}
+              onChange={(e) => setMemo(e.target.value)}
+              onBlur={(e) => saveField("memo", e.target.value)}
               placeholder="行きたい理由、おすすめ情報など..."
               rows={3}
               className="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-base text-gray-700 bg-gray-50 focus:bg-white focus:border-blue-400 focus:outline-none transition-colors resize-none leading-relaxed"
@@ -221,15 +218,15 @@ export function ItemDetailSheet({ item, onClose, onUpdate }: ItemDetailSheetProp
           </div>
         </div>
 
-        {/* 自動保存インジケーター */}
+        {/* 保存インジケーター */}
         <div className="flex justify-end items-center gap-1 px-4 py-2 flex-shrink-0 pb-safe">
-          {saveStatus === "saving" && (
+          {isSaving && (
             <span className="text-xs text-gray-400">保存中…</span>
           )}
           {saveStatus === "saved" && (
             <>
               <Check className="w-3 h-3 text-emerald-500" strokeWidth={2.5} />
-              <span className="text-xs text-emerald-500">自動保存済み</span>
+              <span className="text-xs text-emerald-500">保存済み</span>
             </>
           )}
         </div>
