@@ -26,7 +26,7 @@ const FILTER_SEASONS: { value: Season | "all"; label: string }[] = [
   { value: "summer", label: "夏" },
   { value: "autumn", label: "秋" },
   { value: "winter", label: "冬" },
-  { value: "undecided", label: "未定" },
+  { value: "undecided", label: "その他" },
 ];
 
 interface RoomViewProps {
