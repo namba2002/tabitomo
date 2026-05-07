@@ -122,7 +122,7 @@ export function RoomView({ initialItems, roomId }: RoomViewProps) {
   }
 
   return (
-    <div className="flex flex-col flex-1 min-h-0">
+    <div className="flex flex-col flex-1 min-h-0 relative">
       <ItemDetailSheet
         item={selectedItem}
         onClose={() => setSelectedItem(null)}
@@ -147,7 +147,7 @@ export function RoomView({ initialItems, roomId }: RoomViewProps) {
         })}
       </div>
 
-      <div ref={scrollRef} className={`flex-1 px-4 py-4 overscroll-none ${selectedItem ? "overflow-hidden" : "overflow-y-auto"}`}>
+      <div ref={scrollRef} className={`flex-1 px-4 py-4 pb-20 overscroll-none ${selectedItem ? "overflow-hidden" : "overflow-y-auto"}`}>
         {toggleError && (
           <div className="mb-3 px-3 py-2 bg-red-50 text-red-600 text-sm rounded-lg">
             {toggleError}
@@ -213,14 +213,19 @@ export function RoomView({ initialItems, roomId }: RoomViewProps) {
         )}
       </div>
 
-      {/* 下部固定入力エリア */}
-      <AddItemForm
-        roomId={roomId}
-        onOptimisticAdd={handleOptimisticAdd}
-        onConfirm={handleConfirm}
-        onRollback={handleRollback}
-        onAfterSubmit={() => { if (scrollRef.current) scrollRef.current.scrollTop = 0; }}
-      />
+      {/* 下部固定入力エリア（absolute でフレックスレイアウトから外す） */}
+      <div className="absolute bottom-0 left-0 right-0 z-10">
+        <AddItemForm
+          roomId={roomId}
+          onOptimisticAdd={handleOptimisticAdd}
+          onConfirm={handleConfirm}
+          onRollback={handleRollback}
+          onAfterSubmit={() => {
+            if (scrollRef.current) scrollRef.current.scrollTop = 0;
+            setTimeout(() => { if (scrollRef.current) scrollRef.current.scrollTop = 0; }, 350);
+          }}
+        />
+      </div>
     </div>
   );
 }
