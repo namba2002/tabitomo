@@ -10,11 +10,12 @@ interface AddItemFormProps {
   onOptimisticAdd: (tempItem: Item) => void;
   onConfirm: (tempId: string, realItem: Item) => void;
   onRollback: (tempId: string) => void;
+  onAfterSubmit?: () => void;
 }
 
 const SEASONS: Season[] = ["spring", "summer", "autumn", "winter", "undecided"];
 
-export function AddItemForm({ roomId, onOptimisticAdd, onConfirm, onRollback }: AddItemFormProps) {
+export function AddItemForm({ roomId, onOptimisticAdd, onConfirm, onRollback, onAfterSubmit }: AddItemFormProps) {
   const [title, setTitle] = useState("");
   const [season, setSeason] = useState<Season>("undecided");
   const [isExpanded, setIsExpanded] = useState(false);
@@ -60,6 +61,7 @@ export function AddItemForm({ roomId, onOptimisticAdd, onConfirm, onRollback }: 
     setSeason("undecided");
     setIsExpanded(false);
     setError(null);
+    onAfterSubmit?.();
 
     try {
       const { data: realItem, error } = await supabaseBrowser

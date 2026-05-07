@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Item, Season } from "@/types";
 import { ChevronRight } from "lucide-react";
 import { ItemCard } from "./ItemCard";
@@ -31,6 +31,7 @@ export function RoomView({ initialItems, roomId }: RoomViewProps) {
   const [doneExpanded, setDoneExpanded] = useState(true);
   const [seasonFilter, setSeasonFilter] = useState<Season | "all">("all");
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
 
   const filtered = seasonFilter === "all" ? items : items.filter((i) => i.season === seasonFilter);
 
@@ -146,7 +147,7 @@ export function RoomView({ initialItems, roomId }: RoomViewProps) {
         })}
       </div>
 
-      <div className={`flex-1 px-4 py-4 overscroll-none ${selectedItem ? "overflow-hidden" : "overflow-y-auto"}`}>
+      <div ref={scrollRef} className={`flex-1 px-4 py-4 overscroll-none ${selectedItem ? "overflow-hidden" : "overflow-y-auto"}`}>
         {toggleError && (
           <div className="mb-3 px-3 py-2 bg-red-50 text-red-600 text-sm rounded-lg">
             {toggleError}
@@ -218,6 +219,7 @@ export function RoomView({ initialItems, roomId }: RoomViewProps) {
         onOptimisticAdd={handleOptimisticAdd}
         onConfirm={handleConfirm}
         onRollback={handleRollback}
+        onAfterSubmit={() => { if (scrollRef.current) scrollRef.current.scrollTop = 0; }}
       />
     </div>
   );
